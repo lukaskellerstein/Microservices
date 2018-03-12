@@ -1,0 +1,33 @@
+version: '3.3'
+
+services:
+
+  myapp1:
+    image: myapp1
+    environment:
+      - CONSUL_HTTP_ADDR=consul:8500
+      - SERVICE_TAGS=traefik.enable=true,traefik.frontend.entryPoints=http,traefik.frontend.rule=PathPrefixStrip:/app1
+    deploy:
+      labels:
+        - "traefik.frontend.rule=PathPrefixStrip:/app1"
+    depends_on:
+      - consul
+    networks:
+      - sky-net
+
+  myapp2:
+    image: myapp2
+    environment:
+      - CONSUL_HTTP_ADDR=consul:8500
+      - SERVICE_TAGS=traefik.enable=true,traefik.frontend.entryPoints=http,traefik.frontend.rule=PathPrefixStrip:/app2
+    deploy:
+      labels:
+        - "traefik.frontend.rule=PathPrefixStrip:/app2"
+    depends_on:
+      - consul
+    networks:
+      - sky-net
+
+networks:
+  sky-net:
+    external: true

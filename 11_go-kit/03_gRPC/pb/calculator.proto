@@ -1,0 +1,16 @@
+syntax = "proto3";
+package pb;
+
+
+service Calculator {
+    rpc Plus(PlusRequest) returns (PlusResponse) {}
+}
+
+message PlusRequest {
+    int32 a = 1;
+    int32 b = 2;
+}
+
+message PlusResponse {
+    int32 result = 1;
+}

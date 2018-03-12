@@ -1,0 +1,74 @@
+version: '2'
+
+services:
+
+  consul:
+    image: consul:1.0.3
+    ports:
+      - "8300:8300"
+      - "8400:8400"
+      - "8500:8500"
+      - "8600:53/udp"
+    networks:
+      - sky-net
+
+  reverse-proxy:
+    image: reverse-proxy
+    build:
+      context: ./traefik
+    command: traefik --consulcatalog.endpoint=consul:8500
+    ports:
+      - "8080:8080"
+      - "8081:80"
+    depends_on:
+      - consul
+    links:
+      - consul
+    networks:
+      - sky-net
+
+  registrator:
+    depends_on:
+      - consul
+    image: gliderlabs/registrator:master
+    command: -internal consul://consul:8500
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock
+    links:
+      - consul
+    networks:
+      - sky-net
+
+  myapp1:
+    image: myapp1
+    build:
+      context: ./app1
+    environment:
+      - PORT=10011
+      - CONSUL_HTTP_ADDR=consul:8500
+      - SERVICE_TAGS=traefik.enable=true,traefik.frontend.entryPoints=http,traefik.frontend.rule=Host:localhost
+    labels:
+      - "traefik.frontend.rule=PathPrefixStrip: /app1"
+    depends_on:
+      - consul
+    networks:
+      - sky-net
+
+  myapp2:
+    image: myapp2
+    build:
+      context: ./app2
+    environment:
+      - PORT=10012
+      - CONSUL_HTTP_ADDR=consul:8500
+      - SERVICE_TAGS=traefik.enable=true,traefik.frontend.entryPoints=http,traefik.frontend.rule=Host:localhost
+    labels:
+      - "traefik.frontend.rule=PathPrefixStrip: /app2"
+    depends_on:
+      - consul
+    networks:
+      - sky-net
+
+networks:
+  sky-net:
+    driver: bridge

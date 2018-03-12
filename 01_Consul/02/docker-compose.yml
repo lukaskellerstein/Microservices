@@ -1,0 +1,44 @@
+version: '2'
+
+services:
+
+  consul:
+    image: consul:1.0.3
+    ports:
+      - "8300:8300"
+      - "8400:8400"
+      - "8500:8500"
+    networks:
+      - sky-net
+
+  myapp1:
+    image: myapp1
+    build:
+      context: ./app1
+    environment:
+      - PORT=10011
+      - CONSUL_HTTP_ADDR=consul:8500
+    ports:
+      - "10011:10011"
+    depends_on:
+      - consul
+    networks:
+      - sky-net
+
+  myapp2:
+    image: myapp2
+    build:
+      context: ./app2
+    environment:
+      - PORT=10012
+      - CONSUL_HTTP_ADDR=consul:8500
+    ports:
+      - "10012:10012"
+    depends_on:
+      - consul
+    networks:
+      - sky-net
+
+networks:
+  sky-net:
+    driver: bridge

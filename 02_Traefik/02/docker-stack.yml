@@ -1,0 +1,44 @@
+version: "3"
+
+networks:
+    traefik-net:
+      external: true
+
+volumes:
+    data:
+
+services:
+
+    whoami0:
+      image: emilevauge/whoami
+      networks:
+        - traefik-net
+      deploy:
+        labels:
+          - "traefik.docker.network=traefik-net"
+          - "traefik.backend=whoami0"
+          - "traefik.frontend.rule=Host:whoami0.traefik"
+
+    whoami1:
+      image: emilevauge/whoami
+      networks:
+        - traefik-net
+      deploy:
+        labels:
+          - "traefik.docker.network=traefik-net"
+          - "traefik.backend=whoami1"
+          - "traefik.frontend.rule=PathPrefixStrip: /app1"
+
+    traefik:
+      image: traefik
+      command: -c /dev/null --web --docker --docker.swarmmode --docker.watch --docker.domain=traefik --logLevel=DEBUG
+      networks:
+        - traefik-net
+      ports:
+        - "80:80"
+        - "8080:8080"
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+      deploy:
+        placement:
+          constraints: [node.role == manager]

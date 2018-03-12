@@ -1,0 +1,3 @@
+ts=2018-02-02T12:26:20.938861272Z caller=logging.go:40 function=Minus A=10 B=1 result=9 took=609ns
+ts=2018-02-02T12:26:21.682975904Z caller=logging.go:40 function=Minus A=10 B=1 result=9 took=771ns
+ts=2018-02-02T12:26:22.390003877Z caller=logging.go:40 function=Minus A=10 B=1 result=9 took=900ns

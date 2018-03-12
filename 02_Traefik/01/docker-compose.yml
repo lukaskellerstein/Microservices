@@ -1,0 +1,31 @@
+version: '2'
+
+services:
+
+  traefik:
+    image: traefik
+    command: --web --docker --docker.domain=docker.localhost --logLevel=DEBUG
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /dev/null:/traefik.toml
+
+  whoami:
+      image: emilevauge/whoami
+      labels:
+        - "traefik.backend=whoami"
+        - "traefik.frontend.rule=Host:whoami.docker.localhost"
+
+  app1:
+    image: myapp1
+    labels:
+      - "traefik.backend=mytestapp1"
+      - "traefik.frontend.rule=PathPrefixStrip: /app1"
+
+  app2:
+    image: myapp2
+    labels:
+      - "traefik.backend=mytestapp2"
+      - "traefik.frontend.rule=Host:app2.docker.localhost"

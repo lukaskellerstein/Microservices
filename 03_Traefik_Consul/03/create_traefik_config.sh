@@ -1,0 +1,7 @@
+curl -XPUT http://127.0.0.1:8500/v1/kv/traefik/loglevel -d 'DEBUG'
+curl -XPUT http://127.0.0.1:8500/v1/kv/traefik/defaultentrypoints/0 -d 'http'
+curl -XPUT http://127.0.0.1:8500/v1/kv/traefik/entrypoints/http/address -d ':80'
+curl -XPUT http://127.0.0.1:8500/v1/kv/traefik/consul/endpoint -d 'consul:8500'
+curl -XPUT http://127.0.0.1:8500/v1/kv/traefik/consul/watch -d 'true'
+curl -XPUT http://127.0.0.1:8500/v1/kv/traefik/consul/prefix -d 'traefik'
+curl -XPUT http://127.0.0.1:8500/v1/kv/traefik/web/address -d ':8081'

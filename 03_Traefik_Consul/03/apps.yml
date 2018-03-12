@@ -1,0 +1,36 @@
+version: '3.3'
+
+services:
+  whoami1:
+    image: emilevauge/whoami
+    networks:
+      - appnet
+
+  whoami2:
+    image: emilevauge/whoami
+    networks:
+      - appnet
+
+  whoami3:
+    image: emilevauge/whoami
+    networks:
+      - appnet
+
+  whoami4:
+    image: emilevauge/whoami
+    networks:
+      - appnet
+
+  whoami5:
+    image: rbekker87/flask-containername
+    networks:
+      - appnet
+
+  whoami6:
+    image: rbekker87/flask-containername
+    networks:
+      - appnet
+
+networks:
+  appnet:
+    external: true
