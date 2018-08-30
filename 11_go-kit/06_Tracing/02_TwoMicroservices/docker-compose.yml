@@ -1,0 +1,179 @@
+version: '2'
+
+services:
+
+  iot:
+    image: iot
+    environment:
+      - PORT=44403
+      - MQTT_URL=mqtt
+      - MONGO_URL=mongodb
+    build:
+      context: ./Iot
+      dockerfile: Dockerfile
+    links:
+      - fluentd
+      - mongodb
+      - jaeger
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
+        tag: docker.iot
+        mode: non-blocking
+    ports:
+    - "44403:44403"
+    - "44413:44413"
+
+  
+  api:
+    image: api
+    build:
+      context: ./Api
+      dockerfile: Dockerfile
+    environment:
+      - PORT=44513
+      - MONGO_URL=mongodb
+      - MQTT_URL=mqtt
+      - CELLAR_IOT_URL=iot:44413
+    links:
+      - fluentd
+      - jaeger
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
+        tag: docker.api
+        mode: non-blocking
+    ports:
+    - "44513:44513"
+
+
+# CORE - Third party ***************************
+
+# don't rename to the cellar.hub.** pattern
+# some stuffs with elaticsearch require the simple name pattern
+
+  mongodb:
+    image: mongo
+    ports:
+    - "27017:27017"
+    volumes:
+     - /data/cellarstone.hub/core/mongodb:/data/db 
+
+  mqtt:
+    image: toke/mosquitto
+    ports:
+    - "1883:1883"
+
+  fluentd:
+    image: cellar.hub.fluentd
+    links:
+      - "elasticsearch"
+    ports:
+      - "24224:24224"
+      - "24224:24224/udp"
+
+  elasticsearch:
+    image: elasticsearch
+    volumes:
+        - /data/cellarstone.hub/core/elasticsearch:/var/lib/elasticsearch
+    expose:
+      - 9200
+    ports:
+      - "9200:9200"
+
+  kibana:
+    image: kibana
+    links:
+      - "elasticsearch"
+    ports:
+      - "5601:5601"
+
+  prometheus:
+    image: cellar.hub.prometheus
+    volumes:
+      - /data/cellarstone.hub/core/prometheus:/data/prometheus
+    ports:
+      - '9090:9090'
+    links:
+      - pushgateway
+      - iot
+    
+  #prometheus pushgateway
+  pushgateway:
+    image: prom/pushgateway
+    ports:
+      - 9091:9091
+
+  grafana:
+    image: grafana/grafana
+    links:
+      - prometheus
+      - elasticsearch
+    volumes:
+      - /data/cellarstone.hub/core/grafana:/var/lib/grafana
+    ports:
+      - '3000:3000'
+
+  sysmon:
+    image: titpetric/netdata
+    cap_add:
+      - SYS_PTRACE
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+    ports:
+      - '19999:19999'
+
+  telegraf:
+    image: cellar.hub.telegraf
+    ports:
+      - '8094:8094'
+      - '8092:8092/udp'
+      - '8125:8125/udp'
+  
+  influxdb:
+    image: influxdb:1.3.5
+    volumes:
+      - /data/cellarstone.hub/core/influxdb:/var/lib/influxdb
+    ports:
+      - '8086:8086'
+  
+  kapacitor:
+    image: kapacitor:1.3.3
+    environment:
+      - KAPACITOR_HOSTNAME=kapacitor
+      - KAPACITOR_INFLUXDB_0_URLS_0=http://influxdb:8086
+    links:
+      - influxdb
+    ports:
+      - '9092:9092'
+  
+  chronograf:
+    image: chronograf:1.3.8
+    environment:
+      - INFLUXDB_URL=http://influxdb:8086
+      - KAPACITOR_URL=http://kapacitor:9092
+    links:
+      - influxdb
+      - kapacitor
+    ports:
+      - '8888:8888'
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    environment:
+      - COLLECTOR_ZIPKIN_HTTP_PORT=9411
+    ports:
+      - '5775:5775/udp'
+      - '6831:6831/udp'
+      - '6832:6832/udp'
+      - '5778:5778'
+      - '16686:16686'
+      - '14268:14268'
+      - '9411:9411'
+
+
+
+# MODULES ***************************

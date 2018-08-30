@@ -1,0 +1,48 @@
+syntax = "proto3";
+package pb;
+
+
+service IoTService {
+    rpc GetAllSpaces(GetAllSpacesRequest) returns (GetAllSpacesResponse) {}
+    rpc GetSenzor(GetSenzorRequest) returns (GetSenzorResponse) {}
+}
+
+//OBJECTS
+message CellarSpace {
+    string Id = 1;
+    string Name = 2;
+    string State = 3;
+    string Image = 4;
+    string Path = 5;
+}
+
+message CellarSenzor {
+    string Id = 1;
+    string Name = 2;
+    string State = 3;
+    string Path = 4;
+    string Type = 5;
+    string Firmware = 6;
+    string IpAdrress = 7;
+    string WifiSSID = 8;
+    string WifiPassword = 9;
+    string MQTTUrl = 10;
+}
+
+
+
+message GetAllSpacesRequest {
+}
+
+message GetAllSpacesResponse {
+    repeated CellarSpace Data = 1;
+}
+
+
+message GetSenzorRequest {
+    string Id = 1;
+}
+
+message GetSenzorResponse {
+    CellarSenzor Data = 1;
+}

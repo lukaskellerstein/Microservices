@@ -1,0 +1,4 @@
+
+Generate gRPC
+
+`make generate`
